@@ -1,0 +1,67 @@
+<Program>     -> <FnList>
+
+<FnList>      -> <Function> | <Function> <FnList>
+
+<Function>    -> <Type> <Identifier> LParen <ArgList> RParen 
+                <LBrace>
+                    <Body>
+                    <ReturnStmt>
+                <RBracr>
+
+<ReturnStmt>  -> RETURN (<Expr> | e) semicolon
+
+<ArgList>     -> <NOArg> | <Args>
+<NOArg>       -> e 
+<Args>        -> <Type> <Identifier> | <Type> <Identifier> Comma <ArgList> 
+
+<Type>       -> INT | CHAR 
+
+<Identifier> -> [a-zA-Z]+
+
+<Body>       -> <StmtList>
+
+<StmtList>   -> e | <Statment> <StmtList>
+
+<Statment>   -> <AssignStmt> | <IF-Else> | <For-Loop>
+
+<AssignStmt> -> [<Type>] <Identifier> [LSQ <Expr> RSQ] <Assign> <Expr> <semicolon>
+
+<Expr>       -> <Term> (+ | -) <Term>
+<Term>       -> <Factor>
+<Factor>     -> LParen <Factor> RParen | (<FnCall> | <Identifier> | <INTEGER> | <CHARACTER> | <ArrIdent>) [(* | /) <Factor>]
+
+<ArrIdent>   -> <Identifier> LSQ <Expr> RSQ
+
+<Fncall>     -> <Identifier> Lparen <ParList> Rparen
+
+<Parlist>    -> {<Identifier>}
+
+<IF-Else>    -> <IF> LParen <CompStmt> RParen 
+                    LBrace
+                        <Body>
+                    RBrace 
+                <Else> 
+                    LBrace
+                        <Body>
+                    RBrace
+
+<CompStmt>   -> <Identifier> (>|<| == | !=) <Identifier>
+
+<For-Loop>   -> <FOR> LParen <AssignStmt> <CompStmt> <semicolon> <AssignStmt> 
+                LBrace
+                    <Body>
+                RBrace
+
+<INTEGER>    -> [0-9]+
+<CHARACTER>  -> [a-zA-Z]
+LPAREN       -> (
+RPAREN       -> )
+LSQ          -> [
+RSQ          -> ]
+LBrace       -> {
+RBrace       -> }
+INT          -> int 
+CHAR         -> char
+FOR          -> for
+IF           -> if
+ELSE         -> else
