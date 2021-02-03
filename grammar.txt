@@ -22,7 +22,7 @@
 
 <StmtList>   -> e | <Stmt> <StmtList>
 
-<Stmt>   -> <AssignStmt> | IfElse | <ForLoop>
+<Stmt>   -> <AssignStmt> | <IfElse> | <ForLoop>
 
 <AssignStmt> -> [<Type>] <Identifier> [LBRACKET <Expr> RBRACKET] <Assign> <Expr> SEMICOLON
 
@@ -38,7 +38,7 @@
 
 <ParList>    -> {<Identifier>}
 
-IfElse    -> IF LPAREN <CompStmt> RPAREN 
+<IfElse>    -> IF LPAREN <CompStmt> RPAREN 
                     LBRACE
                         <Body>
                     RBRACE 
