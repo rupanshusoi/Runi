@@ -1,6 +1,6 @@
-<Program>     -> <FnList>
+<Program>     -> <FunctionList>
 
-<FnList>      -> <Function> | <Function> <FnList>
+<FunctionList>      -> <Function> | <Function> <FunctionList>
 
 <Function>    -> <Type> <Identifier> LPAREN <ArgList> RPAREN 
                 LBRACE
@@ -12,7 +12,7 @@
 
 <ArgList>     -> e | <Args>
 
-<Args>        -> <Type> <Identifier> | <Type> <Identifier> COMMA <ARGLISt> 
+<Args>        -> <Type> <Identifier> | <Type> <Identifier> COMMA <ArgList> 
 
 <Type>       -> INT | CHAR 
 
@@ -22,34 +22,34 @@
 
 <StmtList>   -> e | <Stmt> <StmtList>
 
-<Stmt>   -> <AssignStmt> | <If-Else> | <For-Loop>
+<Stmt>   -> <AssignStmt> | IfElse | <ForLoop>
 
 <AssignStmt> -> [<Type>] <Identifier> [LBRACKET <Expr> RBRACKET] <Assign> <Expr> SEMICOLON
 
-<Expr>       -> <Term> (+ | -) <Term>
+<Expr>       -> <Term> [(+ | -) <Expr>]
 
-<Term>       -> <Factor>
+<Term>       -> <Factor> [( * | / ) <Term>]
 
-<Factor>     -> LPAREN <Factor> RPAREN | (<FnCall> | <Identifier> | INTEGER | CHARACTER | <ArrIdent>) [(* | /) <Factor>]
+<Factor>     -> LPAREN <Expr> RPAREN | <FnCall> | <Identifier> | INTEGER | CHARACTER | <ArrIdent>
 
 <ArrIdent>   -> <Identifier> LBRACKET <Expr> RBRACKET
 
 <Fncall>     -> <Identifier> LPAREN <ParList> RPAREN
 
-<Parlist>    -> {<Identifier>}
+<ParList>    -> {<Identifier>}
 
-<If-Else>    -> <IF> LPAREN <CompStmt> RPAREN 
+IfElse    -> IF LPAREN <CompStmt> RPAREN 
                     LBRACE
                         <Body>
                     RBRACE 
-                <Else> 
+                ELSE 
                     LBRACE
                         <Body>
                     RBRACE
 
 <CompStmt>   -> <Identifier> (>|<| == | !=) <Identifier>
 
-<For-Loop>   -> <FOR> LPAREN <AssignStmt> <CompStmt> <semicolon> <AssignStmt> 
+<ForLoop>   -> <FOR> LPAREN <AssignStmt> <CompStmt> <semicolon> <AssignStmt> 
                 LBRACE
                     <Body>
                 RBRACE
