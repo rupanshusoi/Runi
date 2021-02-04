@@ -5,10 +5,7 @@
 <Function>    -> <Type> <Identifier> LPAREN <ArgList> RPAREN 
                 LBRACE
                     <Body>
-                    <ReturnStmt>
                 RBRACE
-
-<ReturnStmt>  -> RETURN (<Expr> | e) SEMICOLON
 
 <ArgList>     -> e | <Args>
 
@@ -22,7 +19,9 @@
 
 <StmtList>   -> e | <Stmt> <StmtList>
 
-<Stmt>   -> <AssignStmt> | <IfElse> | <ForLoop>
+<Stmt>   -> <AssignStmt> | <IfElse> | <ForLoop> | <ReturnStmt>
+
+<ReturnStmt>  -> RETURN (<Expr> | e) SEMICOLON
 
 <AssignStmt> -> [<Type>] <Identifier> [LBRACKET <Expr> RBRACKET] <Assign> <Expr> SEMICOLON
 
@@ -30,13 +29,13 @@
 
 <Term>       -> <Factor> [( * | / ) <Term>]
 
-<Factor>     -> LPAREN <Expr> RPAREN | <FnCall> | <Identifier> | INTEGER | CHARACTER | <ArrIdent>
+<Factor>     -> LPAREN <Expr> RPAREN | <FunctionCall> | <Identifier> | INTEGER | CHARACTER | <ArrIdent>
 
 <ArrIdent>   -> <Identifier> LBRACKET <Expr> RBRACKET
 
-<Fncall>     -> <Identifier> LPAREN <ParList> RPAREN
+<FunctionCall>     -> <Identifier> LPAREN <ParameterList> RPAREN
 
-<ParList>    -> {<Identifier>}
+<ParameterList>    -> {<Identifier>}
 
 <IfElse>    -> IF LPAREN <CompStmt> RPAREN 
                     LBRACE
@@ -47,9 +46,9 @@
                         <Body>
                     RBRACE
 
-<CompStmt>   -> <Identifier> (>|<| == | !=) <Identifier>
+<CompStmt>   -> <Identifier> COMP_OP <Identifier>
 
-<ForLoop>   -> <FOR> LPAREN <AssignStmt> <CompStmt> <semicolon> <AssignStmt> 
+<ForLoop>   -> FOR LPAREN <AssignStmt> SEMICOLON <CompStmt> SEMICOLON <AssignStmt> 
                 LBRACE
                     <Body>
                 RBRACE
@@ -69,3 +68,4 @@ IF           -> if
 ELSE         -> else
 SEMICOLON    -> ;
 COMMA        -> ,
+COMP_OP      -> < | > | == | !=

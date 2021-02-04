@@ -1,0 +1,6 @@
+digraph G {
+  Function -> "Type <Type>";
+  Function -> "Name <Identifier>";
+  Function -> "ArgList <ArgList>";
+  Function -> "Body <Body>";
+}
