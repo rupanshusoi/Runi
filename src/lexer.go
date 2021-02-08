@@ -2,12 +2,14 @@ package main
 
 import (
 	"io/ioutil"
+	"strings"
 )
 
 type Lexer struct {
 	program  string
 	position int  // index of next char
 	char     byte // current char
+	line_num int
 }
 
 type Token struct {
@@ -49,6 +51,9 @@ func (lexer *Lexer) readCharSkipWhitespace() {
 	lexer.readChar()
 	// ASCII for \n is 10
 	for lexer.char == ' ' || lexer.char == 10 {
+		if lexer.char == 10 {
+			lexer.line_num += 1
+		}
 		lexer.readChar()
 	}
 }
@@ -159,5 +164,6 @@ func Lex(file string) *Lexer {
 	program, err := ioutil.ReadFile(file)
 	check(err)
 
-	return &Lexer{string(program), 1, program[0]}
+	program_ := strings.TrimSpace(string(program))
+	return &Lexer{program_, 1, program_[0], 1}
 }

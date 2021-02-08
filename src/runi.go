@@ -1,12 +1,14 @@
 package main
 
-import ("fmt")
+import (
+	"fmt"
+)
 
 func main() {
 	lexer := Lex("test.txt")
-    var token *Token
+	var token *Token
 	for lexer.char != 0 {
-        token = lexer.NextToken()
-        fmt.Printf("%s, %s\n", token.type_, token.literal)
+		token = lexer.NextToken()
+		fmt.Printf("%s, %s, %d\n", token.type_, token.literal, lexer.line_num)
 	}
 }
