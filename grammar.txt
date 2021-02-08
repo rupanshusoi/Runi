@@ -2,18 +2,18 @@
 
 <FunctionList>      -> <Function> | <Function> <FunctionList>
 
-<Function>    -> <Type> <Identifier> LPAREN <ArgList> RPAREN 
+<Function>    -> <Type> IDENTIFIER LPAREN <ArgList> RPAREN 
                 LBRACE
                     <Body>
                 RBRACE
 
 <ArgList>     -> e | <Args>
 
-<Args>        -> <Type> <Identifier> | <Type> <Identifier> COMMA <ArgList> 
+<Args>        -> <Type> IDENTIFIER | <Type> IDENTIFIER COMMA <ArgList> 
 
 <Type>       -> INT | CHAR 
 
-<Identifier> -> [a-zA-Z]+
+IDENTIFIER -> [a-zA-Z]+
 
 <Body>       -> <StmtList>
 
@@ -23,19 +23,19 @@
 
 <ReturnStmt>  -> RETURN (<Expr> | e) SEMICOLON
 
-<AssignStmt> -> [<Type>] <Identifier> [LBRACKET <Expr> RBRACKET] <Assign> <Expr> SEMICOLON
+<AssignStmt> -> [<Type>] IDENTIFIER [LBRACKET <Expr> RBRACKET] ASSIGN <Expr> SEMICOLON
 
-<Expr>       -> <Term> [(+ | -) <Expr>]
+<Expr>       -> <Term> [(PLUS | MINUS) <Expr>]
 
-<Term>       -> <Factor> [( * | / ) <Term>]
+<Term>       -> <Factor> [( STAR | SLASH ) <Term>]
 
-<Factor>     -> LPAREN <Expr> RPAREN | <FunctionCall> | <Identifier> | INTEGER | CHARACTER | <ArrIdent>
+<Factor>     -> LPAREN <Expr> RPAREN | <FunctionCall> | IDENTIFIER | INTEGER | CHARACTER | <ArrIdent>
 
-<ArrIdent>   -> <Identifier> LBRACKET <Expr> RBRACKET
+<ArrIdent>   -> IDENTIFIER LBRACKET <Expr> RBRACKET
 
-<FunctionCall>     -> <Identifier> LPAREN <ParameterList> RPAREN
+<FunctionCall>     -> IDENTIFIER LPAREN <ParameterList> RPAREN
 
-<ParameterList>    -> {<Identifier>}
+<ParameterList>    -> {IDENTIFIER}
 
 <IfElse>    -> IF LPAREN <CompStmt> RPAREN 
                     LBRACE
@@ -46,7 +46,7 @@
                         <Body>
                     RBRACE
 
-<CompStmt>   -> <Identifier> COMP_OP <Identifier>
+<CompStmt>   -> IDENTIFIER COMP_OP IDENTIFIER
 
 <ForLoop>   -> FOR LPAREN <AssignStmt> SEMICOLON <CompStmt> SEMICOLON <AssignStmt> 
                 LBRACE
@@ -69,3 +69,10 @@ ELSE         -> else
 SEMICOLON    -> ;
 COMMA        -> ,
 COMP_OP      -> < | > | == | !=
+ASSIGN       -> =
+PLUS         -> +
+MINUS        -> -
+STAR         -> *
+SLASH        -> /
+IDENTIFIER   -> [a-zA-Z]+
+RETURN       -> return
