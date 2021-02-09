@@ -26,7 +26,11 @@ func check(e error) {
 
 // Peek next char without advancing position
 func (lexer *Lexer) peekChar() byte {
-	return lexer.program[lexer.position]
+	if lexer.position >= len(lexer.program) {
+		return 0
+	} else {
+		return lexer.program[lexer.position]
+	}
 }
 
 func (lexer *Lexer) readChar() {
@@ -113,7 +117,19 @@ func (lexer *Lexer) NextToken() *Token {
 	case '*':
 		token = Token{STAR, string(lexer.char), lexer.line_num}
 	case '/':
-		token = Token{SLASH, string(lexer.char), lexer.line_num}
+		if lexer.peekChar() == '/' {
+			for lexer.peekChar() != '\n' {
+				lexer.readChar()
+			}
+			// This call will increment the line number without us
+			// having to do it directly
+			lexer.readCharSkipWhitespace()
+			// The caller expects us to return a token every time,
+			// so we call NextToken() on our own here
+			return lexer.NextToken()
+		} else {
+			token = Token{SLASH, string(lexer.char), lexer.line_num}
+		}
 	case '<':
 		token = Token{COMP_OP, string(lexer.char), lexer.line_num}
 	case '>':
