@@ -13,17 +13,9 @@ type Lexer struct {
 }
 
 type Token struct {
-	type_   string
-	literal string
-}
-
-var keywords = map[string]string{
-	"int":    "TYPE",
-	"char":   "TYPE",
-	"for":    "KEYWORD",
-	"if":     "KEYWORD",
-	"else":   "KEYWORD",
-	"return": "KEYWORD",
+	type_    string
+	literal  string
+	line_num int // need it for parsing
 }
 
 func check(e error) {
@@ -38,8 +30,7 @@ func (lexer *Lexer) peekChar() byte {
 }
 
 func (lexer *Lexer) readChar() {
-	// The last char should be EOF anyway
-	if lexer.position >= len(lexer.program)-1 {
+	if lexer.position >= len(lexer.program) {
 		lexer.char = 0
 	} else {
 		lexer.char = lexer.program[lexer.position]
@@ -49,8 +40,7 @@ func (lexer *Lexer) readChar() {
 
 func (lexer *Lexer) readCharSkipWhitespace() {
 	lexer.readChar()
-	// ASCII for \n is 10
-	for lexer.char == ' ' || lexer.char == 10 {
+	for lexer.char == ' ' || lexer.char == '\n' {
 		if lexer.char == 10 {
 			lexer.line_num += 1
 		}
@@ -69,7 +59,7 @@ func (lexer *Lexer) readChars(n int) string {
 }
 
 func (lexer *Lexer) emitIllegalToken() Token {
-	return Token{"ILLEGAL", string(lexer.char)}
+	return Token{ILLEGAL, string(lexer.char), lexer.line_num}
 }
 
 func isAlpha(char byte) bool {
@@ -81,7 +71,7 @@ func (lexer *Lexer) emitIdentifierToken() Token {
 	for isAlpha(lexer.peekChar()) {
 		lexer.readChar()
 	}
-	return Token{"IDENT", lexer.program[start:lexer.position]}
+	return Token{IDENT, lexer.program[start:lexer.position], lexer.line_num}
 }
 
 func isDigit(char byte) bool {
@@ -93,7 +83,7 @@ func (lexer *Lexer) emitIntegerToken() Token {
 	for isDigit(lexer.peekChar()) {
 		lexer.readChar()
 	}
-	return Token{"INTEGER", lexer.program[start:lexer.position]}
+	return Token{INTEGER, lexer.program[start:lexer.position], lexer.line_num}
 }
 
 func (lexer *Lexer) NextToken() *Token {
@@ -101,44 +91,44 @@ func (lexer *Lexer) NextToken() *Token {
 
 	switch lexer.char {
 	case '(':
-		token = Token{"LPAREN", string(lexer.char)}
+		token = Token{LPAREN, string(lexer.char), lexer.line_num}
 	case ')':
-		token = Token{"RPAREN", string(lexer.char)}
+		token = Token{RPAREN, string(lexer.char), lexer.line_num}
 	case '[':
-		token = Token{"LBRACKET", string(lexer.char)}
+		token = Token{LBRACKET, string(lexer.char), lexer.line_num}
 	case ']':
-		token = Token{"RBRACKET", string(lexer.char)}
+		token = Token{RBRACKET, string(lexer.char), lexer.line_num}
 	case '{':
-		token = Token{"LBRACE", string(lexer.char)}
+		token = Token{LBRACE, string(lexer.char), lexer.line_num}
 	case '}':
-		token = Token{"RBRACE", string(lexer.char)}
+		token = Token{RBRACE, string(lexer.char), lexer.line_num}
 	case ';':
-		token = Token{"SEMICOLON", string(lexer.char)}
+		token = Token{SEMICOLON, string(lexer.char), lexer.line_num}
 	case ',':
-		token = Token{"COMMA", string(lexer.char)}
+		token = Token{COMMA, string(lexer.char), lexer.line_num}
 	case '+':
-		token = Token{"PLUS", string(lexer.char)}
+		token = Token{PLUS, string(lexer.char), lexer.line_num}
 	case '-':
-		token = Token{"MINUS", string(lexer.char)}
+		token = Token{MINUS, string(lexer.char), lexer.line_num}
 	case '*':
-		token = Token{"STAR", string(lexer.char)}
+		token = Token{STAR, string(lexer.char), lexer.line_num}
 	case '/':
-		token = Token{"SLASH", string(lexer.char)}
+		token = Token{SLASH, string(lexer.char), lexer.line_num}
 	case '<':
-		token = Token{"COMP_OP", string(lexer.char)}
+		token = Token{COMP_OP, string(lexer.char), lexer.line_num}
 	case '>':
-		token = Token{"COMP_OP", string(lexer.char)}
+		token = Token{COMP_OP, string(lexer.char), lexer.line_num}
 	case '!':
 		if lexer.peekChar() == '=' {
-			token = Token{"COMP_OP", lexer.readChars(2)}
+			token = Token{COMP_OP, lexer.readChars(2), lexer.line_num}
 		} else {
 			token = lexer.emitIllegalToken()
 		}
 	case '=':
 		if lexer.peekChar() == '=' {
-			token = Token{"COMP_OP", lexer.readChars(2)}
+			token = Token{COMP_OP, lexer.readChars(2), lexer.line_num}
 		} else {
-			token = Token{"ASSIGN", string(lexer.char)}
+			token = Token{ASSIGN, string(lexer.char), lexer.line_num}
 		}
 	default:
 		if isAlpha(lexer.char) {
@@ -147,7 +137,7 @@ func (lexer *Lexer) NextToken() *Token {
 			// Emit a different token if the identifier is a keyword
 			type_, isKeyword := keywords[token.literal]
 			if isKeyword {
-				token = Token{type_, token.literal}
+				token = Token{type_, token.literal, lexer.line_num}
 			}
 		} else if isDigit(lexer.char) {
 			token = lexer.emitIntegerToken()
@@ -161,9 +151,20 @@ func (lexer *Lexer) NextToken() *Token {
 }
 
 func Lex(file string) *Lexer {
-	program, err := ioutil.ReadFile(file)
+	p, err := ioutil.ReadFile(file)
 	check(err)
 
-	program_ := strings.TrimSpace(string(program))
-	return &Lexer{program_, 1, program_[0], 1}
+	program := string(p)
+
+	var leadingNewlines int
+	for _, value := range program {
+		if value == '\n' {
+			leadingNewlines += 1
+		} else if value != ' ' {
+			break
+		}
+	}
+
+	program = strings.TrimSpace(program)
+	return &Lexer{program, 1, program[0], leadingNewlines + 1}
 }
