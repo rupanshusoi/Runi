@@ -30,6 +30,7 @@ const (
 	IDENT  = "IDENT"
 
 	INTEGER = "INTEGER"
+	STRING  = "STRING"
 
 	ILLEGAL = "ILLEGAL"
 )

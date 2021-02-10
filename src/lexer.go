@@ -90,6 +90,25 @@ func (lexer *Lexer) emitIntegerToken() Token {
 	return Token{INTEGER, lexer.program[start:lexer.position], lexer.line_num}
 }
 
+func (lexer *Lexer) emitStringToken() Token {
+	// Advance over the opening quote
+	lexer.readChar()
+
+	start := lexer.position - 1
+	for lexer.peekChar() != '"' {
+		lexer.readChar()
+		if lexer.char == 0 {
+			panic("unexpected EOF while looking for closing quote")
+		}
+	}
+	token := Token{STRING, lexer.program[start:lexer.position], lexer.line_num}
+
+	// Advance over the closing quote
+	lexer.readChar()
+
+	return token
+}
+
 func (lexer *Lexer) NextToken() *Token {
 	var token Token
 
@@ -146,6 +165,8 @@ func (lexer *Lexer) NextToken() *Token {
 		} else {
 			token = Token{ASSIGN, string(lexer.char), lexer.line_num}
 		}
+	case '"':
+		token = lexer.emitStringToken()
 	default:
 		if isAlpha(lexer.char) {
 			token = lexer.emitIdentifierToken()

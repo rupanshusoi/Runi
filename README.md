@@ -1,2 +1,2 @@
 # Runi
-Hand-written lexer and parser for C
+Hand-written lexer and parser for C in Go.
