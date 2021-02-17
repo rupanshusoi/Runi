@@ -99,6 +99,8 @@ func (lexer *Lexer) emitStringToken() *Token {
 		lexer.readChar()
 		if lexer.char == 0 {
 			panic("unexpected EOF while looking for closing quote")
+		} else if lexer.char == '\n' {
+			lexer.line_num += 1
 		}
 	}
 	token := Token{STRING, lexer.program[start:lexer.next_idx], lexer.line_num}
