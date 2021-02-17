@@ -7,7 +7,7 @@ import (
 
 type Lexer struct {
 	program  string
-	position int  // index of next char
+	next_idx int  // index of next char
 	char     byte // current char
 	line_num int
 }
@@ -24,21 +24,21 @@ func check(e error) {
 	}
 }
 
-// Peek next char without advancing position
+// Peek next char without advancing next_idx
 func (lexer *Lexer) peekChar() byte {
-	if lexer.position >= len(lexer.program) {
+	if lexer.next_idx >= len(lexer.program) {
 		return 0
 	} else {
-		return lexer.program[lexer.position]
+		return lexer.program[lexer.next_idx]
 	}
 }
 
 func (lexer *Lexer) readChar() {
-	if lexer.position >= len(lexer.program) {
+	if lexer.next_idx >= len(lexer.program) {
 		lexer.char = 0
 	} else {
-		lexer.char = lexer.program[lexer.position]
-		lexer.position += 1
+		lexer.char = lexer.program[lexer.next_idx]
+		lexer.next_idx += 1
 	}
 }
 
@@ -54,59 +54,59 @@ func (lexer *Lexer) readCharSkipWhitespace() {
 
 // Read n chars including the current one, and return a string of length n
 func (lexer *Lexer) readChars(n int) string {
-	start := lexer.position - 1
+	start := lexer.next_idx - 1
 	for n != 1 {
 		lexer.readChar()
 		n -= 1
 	}
-	return lexer.program[start:lexer.position]
+	return lexer.program[start:lexer.next_idx]
 }
 
-func (lexer *Lexer) emitIllegalToken() Token {
-	return Token{ILLEGAL, string(lexer.char), lexer.line_num}
+func (lexer *Lexer) emitIllegalToken() *Token {
+	return &Token{ILLEGAL, string(lexer.char), lexer.line_num}
 }
 
 func isAlpha(char byte) bool {
 	return 'a' <= char && char <= 'z' || 'A' <= char && char <= 'Z'
 }
 
-func (lexer *Lexer) emitIdentifierToken() Token {
-	start := lexer.position - 1
+func (lexer *Lexer) emitIdentifierToken() *Token {
+	start := lexer.next_idx - 1
 	for isAlpha(lexer.peekChar()) {
 		lexer.readChar()
 	}
-	return Token{IDENT, lexer.program[start:lexer.position], lexer.line_num}
+	return &Token{IDENT, lexer.program[start:lexer.next_idx], lexer.line_num}
 }
 
 func isDigit(char byte) bool {
 	return '0' <= char && char <= '9'
 }
 
-func (lexer *Lexer) emitIntegerToken() Token {
-	start := lexer.position - 1
+func (lexer *Lexer) emitIntegerToken() *Token {
+	start := lexer.next_idx - 1
 	for isDigit(lexer.peekChar()) {
 		lexer.readChar()
 	}
-	return Token{INTEGER, lexer.program[start:lexer.position], lexer.line_num}
+	return &Token{INTEGER, lexer.program[start:lexer.next_idx], lexer.line_num}
 }
 
-func (lexer *Lexer) emitStringToken() Token {
+func (lexer *Lexer) emitStringToken() *Token {
 	// Advance over the opening quote
 	lexer.readChar()
 
-	start := lexer.position - 1
+	start := lexer.next_idx - 1
 	for lexer.peekChar() != '"' {
 		lexer.readChar()
 		if lexer.char == 0 {
 			panic("unexpected EOF while looking for closing quote")
 		}
 	}
-	token := Token{STRING, lexer.program[start:lexer.position], lexer.line_num}
+	token := Token{STRING, lexer.program[start:lexer.next_idx], lexer.line_num}
 
 	// Advance over the closing quote
 	lexer.readChar()
 
-	return token
+	return &token
 }
 
 func (lexer *Lexer) NextToken() *Token {
@@ -157,7 +157,7 @@ func (lexer *Lexer) NextToken() *Token {
 		if lexer.peekChar() == '=' {
 			token = Token{COMP_OP, lexer.readChars(2), lexer.line_num}
 		} else {
-			token = lexer.emitIllegalToken()
+			token = *lexer.emitIllegalToken()
 		}
 	case '=':
 		if lexer.peekChar() == '=' {
@@ -166,10 +166,10 @@ func (lexer *Lexer) NextToken() *Token {
 			token = Token{ASSIGN, string(lexer.char), lexer.line_num}
 		}
 	case '"':
-		token = lexer.emitStringToken()
+		token = *lexer.emitStringToken()
 	default:
 		if isAlpha(lexer.char) {
-			token = lexer.emitIdentifierToken()
+			token = *lexer.emitIdentifierToken()
 
 			// Emit a different token if the identifier is a keyword
 			type_, isKeyword := keywords[token.literal]
@@ -177,9 +177,9 @@ func (lexer *Lexer) NextToken() *Token {
 				token = Token{type_, token.literal, lexer.line_num}
 			}
 		} else if isDigit(lexer.char) {
-			token = lexer.emitIntegerToken()
+			token = *lexer.emitIntegerToken()
 		} else {
-			token = lexer.emitIllegalToken()
+			token = *lexer.emitIllegalToken()
 		}
 	}
 
