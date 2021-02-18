@@ -67,12 +67,12 @@ func (lexer *Lexer) emitIllegalToken() *Token {
 }
 
 func isAlpha(char byte) bool {
-	return 'a' <= char && char <= 'z' || 'A' <= char && char <= 'Z'
+	return 'a' <= char && char <= 'z' || 'A' <= char && char <= 'Z' /* || char == '_' */
 }
 
 func (lexer *Lexer) emitIdentifierToken() *Token {
 	start := lexer.next_idx - 1
-	for isAlpha(lexer.peekChar()) {
+	for isAlpha(lexer.peekChar()) /* || isDigit(lexer.peekChar()) */ {
 		lexer.readChar()
 	}
 	return &Token{IDENT, lexer.program[start:lexer.next_idx], lexer.line_num}
