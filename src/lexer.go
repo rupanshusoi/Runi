@@ -38,6 +38,9 @@ func (lexer *Lexer) readChar() {
 		lexer.char = 0
 	} else {
 		lexer.char = lexer.program[lexer.next_idx]
+		if lexer.char == '\n' {
+			lexer.line_num += 1
+		}
 		lexer.next_idx += 1
 	}
 }
@@ -45,9 +48,6 @@ func (lexer *Lexer) readChar() {
 func (lexer *Lexer) readCharSkipWhitespace() {
 	lexer.readChar()
 	for lexer.char == ' ' || lexer.char == '\n' {
-		if lexer.char == 10 {
-			lexer.line_num += 1
-		}
 		lexer.readChar()
 	}
 }
@@ -91,24 +91,31 @@ func (lexer *Lexer) emitIntegerToken() *Token {
 }
 
 func (lexer *Lexer) emitStringToken() *Token {
-	// Advance over the opening quote
-	lexer.readChar()
-
 	start := lexer.next_idx - 1
-	for lexer.peekChar() != '"' {
+	start_line_num := lexer.line_num
+
+	lexer.readChar()
+	for lexer.char != '"' {
 		lexer.readChar()
 		if lexer.char == 0 {
 			panic("unexpected EOF while looking for closing quote")
-		} else if lexer.char == '\n' {
-			lexer.line_num += 1
 		}
 	}
-	token := Token{STRING, lexer.program[start:lexer.next_idx], lexer.line_num}
 
-	// Advance over the closing quote
+	return &Token{STRING, lexer.program[start:lexer.next_idx], start_line_num}
+}
+
+func (lexer *Lexer) emitCommentToken() *Token {
+	start_line_num := lexer.line_num
+
 	lexer.readChar()
+	for lexer.char != '\n' && lexer.char != 0 {
+		lexer.readChar()
+	}
 
-	return &token
+	// The parser can safely ignore this token, but we need to return it here
+	// because the caller expects to receive a token every time.
+	return &Token{COMMENT, COMMENT, start_line_num}
 }
 
 func (lexer *Lexer) NextToken() *Token {
@@ -139,15 +146,7 @@ func (lexer *Lexer) NextToken() *Token {
 		token = Token{STAR, string(lexer.char), lexer.line_num}
 	case '/':
 		if lexer.peekChar() == '/' {
-			for lexer.peekChar() != '\n' {
-				lexer.readChar()
-			}
-			// This call will increment the line number without us
-			// having to do it directly
-			lexer.readCharSkipWhitespace()
-			// The caller expects us to return a token every time,
-			// so we call NextToken() on our own here
-			return lexer.NextToken()
+			token = *lexer.emitCommentToken()
 		} else {
 			token = Token{SLASH, string(lexer.char), lexer.line_num}
 		}
@@ -205,5 +204,9 @@ func Lex(file string) *Lexer {
 	}
 
 	program = strings.TrimSpace(program)
+	if len(program) == 0 {
+		panic("can not lex empty file")
+	}
+
 	return &Lexer{program, 1, program[0], leadingNewlines + 1}
 }

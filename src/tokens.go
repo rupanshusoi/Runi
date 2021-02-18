@@ -32,5 +32,7 @@ const (
 	INTEGER = "INTEGER"
 	STRING  = "STRING"
 
+	COMMENT = "COMMENT"
+
 	ILLEGAL = "ILLEGAL"
 )
