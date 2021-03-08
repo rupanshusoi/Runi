@@ -16,6 +16,15 @@ func checkTokens(t *testing.T, t1, t2 *Token) {
 	}
 }
 
+func checkOutput(t *testing.T, file string, output []Token) {
+	lexer := Lex(file)
+	var token *Token
+    for i := 0; lexer.char != 0; i++ {
+		token = lexer.NextToken()
+		checkTokens(t, &output[i], token)
+	}
+}
+
 func TestSimple(t *testing.T) {
 	output := [...]Token{
 		{keywords["int"], "int", 1},
@@ -31,12 +40,5 @@ func TestSimple(t *testing.T) {
 		{RBRACE, "}", 3},
 	}
 
-	lexer := Lex("tests/simple.txt")
-	var token *Token
-	i := 0
-	for lexer.char != 0 {
-		token = lexer.NextToken()
-		checkTokens(t, &output[i], token)
-		i += 1
-	}
+    checkOutput(t, "tests/simple.txt", output[:])
 }
