@@ -1,0 +1,5 @@
+"hello i am a string"
+ "another one" 
+           1234 
+99192 
++ = - * / !=
