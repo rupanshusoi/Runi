@@ -95,6 +95,7 @@ func TestBig(t *testing.T) {
 		{RBRACE, "}", 8},
 		{RBRACE, "}", 9},
 	}
+
 	checkOutput(t, "tests/big.txt", output[:])
 }
 
@@ -150,6 +151,7 @@ func TestCheckLine(t *testing.T) {
 		{RBRACE, "}", 16},
 		{RBRACE, "}", 19},
 	}
+
 	checkOutput(t, "tests/checkLine.txt", output[:])
 }
 
