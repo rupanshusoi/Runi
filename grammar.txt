@@ -23,7 +23,7 @@ IDENTIFIER -> [a-zA-Z]+
 
 <ReturnStmt>  -> RETURN (<Expr> | e) SEMICOLON
 
-<AssignStmt> -> [<Type>] IDENTIFIER [LBRACKET <Expr> RBRACKET] ASSIGN <Expr> SEMICOLON
+<AssignStmt> -> [<Type>] IDENTIFIER ASSIGN <Expr> SEMICOLON
 
 <Expr>       -> <Term> [(PLUS | MINUS) <Expr>]
 
@@ -35,9 +35,11 @@ IDENTIFIER -> [a-zA-Z]+
 
 <FunctionCall>     -> IDENTIFIER LPAREN <ParameterList> RPAREN
 
-<ParameterList>    -> {IDENTIFIER}
+<ParameterList>    -> e | <Params>
 
-<IfElse>    -> IF LPAREN <CompStmt> RPAREN 
+<Params>           -> IDENTIFIER | IDENTIFIER COMMA <ParameterList>
+
+<IfElse>    -> IF LPAREN <Expr> RPAREN 
                     LBRACE
                         <Body>
                     RBRACE 
@@ -46,15 +48,14 @@ IDENTIFIER -> [a-zA-Z]+
                         <Body>
                     RBRACE
 
-<CompStmt>   -> IDENTIFIER COMP_OP IDENTIFIER
 
-<ForLoop>   -> FOR LPAREN <AssignStmt> SEMICOLON <CompStmt> SEMICOLON <AssignStmt> 
+<ForLoop>   -> FOR LPAREN <AssignStmt> SEMICOLON <Expr> SEMICOLON <AssignStmt> 
                 LBRACE
                     <Body>
                 RBRACE
 
 INTEGER      -> [0-9]+
-CHARACTER    -> [a-zA-Z]
+CHARACTER    -> [a-zA-Z]   // character have to be lexed 'a' like this
 LPAREN       -> (
 RPAREN       -> )
 LBRACKET     -> [
