@@ -2,10 +2,16 @@ package main
 
 import (
 	"fmt"
+	"os"
 )
 
 func main() {
-	lexer := Lex("test.txt")
+	var lexer *Lexer
+	if len(os.Args) > 1 {
+		lexer = Lex(os.Args[1])
+	} else {
+		lexer = Lex("test.txt")
+	}
 	var token *Token
 	for lexer.char != 0 {
 		token = lexer.NextToken()
