@@ -2,19 +2,19 @@ package main
 
 import (
 	"fmt"
-    "io/ioutil"
-    ggv "github.com/awalterschulze/gographviz"
+	ggv "github.com/awalterschulze/gographviz"
+	"io/ioutil"
 )
 
 type Parser struct {
 	lexer *Lexer
 	token *Token // current token
-    tree *ggv.Graph
+	tree  *ggv.Graph
 }
 
 func (p *Parser) consumeToken() *Token {
 	//fmt.Printf("consuming %v\n", *p.token)
-    token := p.token
+	token := p.token
 	p.token = p.lexer.NextToken()
 	return token
 }
@@ -34,30 +34,30 @@ func (p *Parser) term(type_ string) *Token {
 	} else {
 		p.unexpectedToken(type_)
 	}
-    panic("error")
+	panic("error")
 }
 
 func (p *Parser) addNode(name, parent string) string {
-    id := RandomString()
-    p.tree.AddNode("G", id, map[string]string{"label": name})
-    p.tree.AddEdge(parent, id, true, nil)
-    return id
+	id := RandomString()
+	p.tree.AddNode("G", id, map[string]string{"label": name})
+	p.tree.AddEdge(parent, id, true, nil)
+	return id
 }
 
 func (p *Parser) addNodeWithId(name, parent, id string) string {
-    p.tree.AddNode("G", id, map[string]string{"label": name})
-    p.tree.AddEdge(parent, id, true, nil)
-    return id
+	p.tree.AddNode("G", id, map[string]string{"label": name})
+	p.tree.AddEdge(parent, id, true, nil)
+	return id
 }
 
 func (p *Parser) editNodeName(id, name string) {
-    attrs, _ := ggv.NewAttrs(make(map[string]string))
-    attrs.Add("label", name)
-    p.tree.Nodes.Lookup[id].Attrs.Extend(attrs)
+	attrs, _ := ggv.NewAttrs(make(map[string]string))
+	attrs.Add("label", name)
+	p.tree.Nodes.Lookup[id].Attrs.Extend(attrs)
 }
 
 func (p *Parser) ntType(parent string) {
-    p.addNode(fmt.Sprintf("\"Type (%v)\"", p.token.literal), parent)
+	p.addNode(fmt.Sprintf("\"Type (%v)\"", p.token.literal), parent)
 	if p.token.type_ == "TYPE" {
 		p.consumeToken()
 	} else {
@@ -66,9 +66,9 @@ func (p *Parser) ntType(parent string) {
 }
 
 func (p *Parser) ntArgs(parent string) {
-    id := p.addNode("Args", parent)
+	id := p.addNode("Args", parent)
 	p.ntType(id)
-    p.editNodeName(id, "\"Args (" + p.term(IDENT).literal + ")\"")
+	p.editNodeName(id, "\"Args ("+p.term(IDENT).literal+")\"")
 	if p.token.type_ == COMMA {
 		p.term(COMMA)
 		p.ntArgList(id)
@@ -76,7 +76,7 @@ func (p *Parser) ntArgs(parent string) {
 }
 
 func (p *Parser) ntArgList(parent string) {
-    id := p.addNode("ArgList", parent)
+	id := p.addNode("ArgList", parent)
 	if p.token.type_ == "TYPE" {
 		p.ntArgs(id)
 	}
@@ -88,14 +88,14 @@ func (p *Parser) ntParameterList(parent string) {
 }
 
 func (p *Parser) ntArrIdent(parent string) {
-    id := p.addNode("\"ArrIdent (" + p.term(IDENT).literal + ")\"", parent)
+	id := p.addNode("\"ArrIdent ("+p.term(IDENT).literal+")\"", parent)
 	p.term(LBRACKET)
 	p.ntExpr(id)
 	p.term(RBRACKET)
 }
 
 func (p *Parser) ntFunctionCall(parent string) {
-    id := p.addNode("\"FunctionCall (" + p.term(IDENT).literal + ")\"", parent)
+	id := p.addNode("\"FunctionCall ("+p.term(IDENT).literal+")\"", parent)
 	p.term(LPAREN)
 	p.ntParameterList(id)
 	p.term(RPAREN)
@@ -103,7 +103,7 @@ func (p *Parser) ntFunctionCall(parent string) {
 
 // TODO: char
 func (p *Parser) ntFactor(parent string) {
-    id := p.addNode("Factor", parent)
+	id := p.addNode("Factor", parent)
 	if p.token.type_ == LPAREN {
 		p.term(LPAREN)
 		p.ntExpr(id)
@@ -111,44 +111,44 @@ func (p *Parser) ntFactor(parent string) {
 	} else if p.peekNextToken().type_ == LPAREN {
 		p.ntFunctionCall(id)
 	} else if p.token.type_ == IDENT {
-        p.editNodeName(id, "\"Factor (" + p.term(IDENT).literal + ")\"")
+		p.editNodeName(id, "\"Factor ("+p.term(IDENT).literal+")\"")
 	} else if p.token.type_ == INTEGER {
-        p.editNodeName(id, "\"Factor (" + p.term(INTEGER).literal + ")\"")
+		p.editNodeName(id, "\"Factor ("+p.term(INTEGER).literal+")\"")
 	} else if p.peekNextToken().type_ == LBRACKET {
 		p.ntArrIdent(id)
 	}
 }
 
 func (p *Parser) ntTerm(parent string) {
-    id := p.addNode("Term", parent)
+	id := p.addNode("Term", parent)
 	p.ntFactor(id)
 	if p.token.type_ == STAR {
 		p.term(STAR)
-        p.editNodeName(id, "\"Term (*)\"")
+		p.editNodeName(id, "\"Term (*)\"")
 		p.ntTerm(id)
 	} else if p.token.type_ == SLASH {
 		p.term(SLASH)
-        p.editNodeName(id, "\"Term (/)\"")
+		p.editNodeName(id, "\"Term (/)\"")
 		p.ntTerm(id)
 	}
 }
 
 func (p *Parser) ntExpr(parent string) {
-    id := p.addNode("Expr", parent)
+	id := p.addNode("Expr", parent)
 	p.ntTerm(id)
 	if p.token.type_ == PLUS {
 		p.term(PLUS)
-        p.editNodeName(id, "\"Expr (+)\"")
+		p.editNodeName(id, "\"Expr (+)\"")
 		p.ntExpr(id)
 	} else if p.token.type_ == MINUS {
 		p.term(MINUS)
-        p.editNodeName(id, "\"Expr (-)\"")
+		p.editNodeName(id, "\"Expr (-)\"")
 		p.ntExpr(id)
 	}
 }
 
 func (p *Parser) ntReturnStmt(parent string) {
-    id := p.addNode("ReturnStmt", parent)
+	id := p.addNode("ReturnStmt", parent)
 	p.term("RETURN_KW")
 	if p.token.type_ != SEMICOLON {
 		p.ntExpr(id)
@@ -157,7 +157,7 @@ func (p *Parser) ntReturnStmt(parent string) {
 }
 
 func (p *Parser) ntIfElse(parent string) {
-    id := p.addNode("IfElse", parent)
+	id := p.addNode("IfElse", parent)
 	p.term("IF_KW")
 	p.term(LPAREN)
 	p.ntExpr(id)
@@ -172,7 +172,7 @@ func (p *Parser) ntIfElse(parent string) {
 }
 
 func (p *Parser) ntForLoop(parent string) {
-    id := p.addNode("ForLoop", parent)
+	id := p.addNode("ForLoop", parent)
 	p.term("FOR_KW")
 	p.term(LPAREN)
 	p.ntAssignStmt(id)
@@ -186,11 +186,11 @@ func (p *Parser) ntForLoop(parent string) {
 }
 
 func (p *Parser) ntAssignStmt(parent string) {
-    id := p.addNode("AssignStmt", parent)
+	id := p.addNode("AssignStmt", parent)
 	if p.token.type_ == "TYPE" {
 		p.ntType(id)
 	}
-    p.editNodeName(id, "\"AssignStmt (" + p.term(IDENT).literal + ")\"")
+	p.editNodeName(id, "\"AssignStmt ("+p.term(IDENT).literal+")\"")
 	if p.token.type_ == LBRACKET {
 		p.term(LBRACKET)
 		p.ntExpr(id)
@@ -202,7 +202,7 @@ func (p *Parser) ntAssignStmt(parent string) {
 }
 
 func (p *Parser) ntStmt(parent string) {
-    id := p.addNode("Stmt", parent)
+	id := p.addNode("Stmt", parent)
 	if p.token.type_ == "IF_KW" {
 		p.ntIfElse(id)
 	} else if p.token.type_ == "FOR_KW" {
@@ -218,21 +218,21 @@ func (p *Parser) ntStmtList(parent string) {
 	// If the current token is an RBRACE then
 	// we've already parsed the last Stmt
 	if p.token.type_ != RBRACE {
-        id := p.addNode("StmtList", parent)
+		id := p.addNode("StmtList", parent)
 		p.ntStmt(id)
 		p.ntStmtList(id)
 	}
 }
 
 func (p *Parser) ntBody(parent string) {
-    id := p.addNode("Body", parent)
+	id := p.addNode("Body", parent)
 	p.ntStmtList(id)
 }
 
 func (p *Parser) ntFunction(parent string) {
-    id := p.addNode("Function", parent)
+	id := p.addNode("Function", parent)
 	p.ntType(id)
-    p.editNodeName(id, "\"Function (" + p.term(IDENT).literal + ")\"")
+	p.editNodeName(id, "\"Function ("+p.term(IDENT).literal+")\"")
 	p.term(LPAREN)
 	p.ntArgList(id)
 	p.term(RPAREN)
@@ -242,7 +242,7 @@ func (p *Parser) ntFunction(parent string) {
 }
 
 func (p *Parser) ntFunctionList(parent string) {
-    id := p.addNode("FunctionList", parent)
+	id := p.addNode("FunctionList", parent)
 	p.ntFunction(id)
 	if p.token.type_ != EOF {
 		p.ntFunctionList(id)
@@ -250,18 +250,18 @@ func (p *Parser) ntFunctionList(parent string) {
 }
 
 func (p *Parser) ntProgram() {
-    p.tree.AddNode("G", "Program", nil)
+	p.tree.AddNode("G", "Program", map[string]string{"peripheries": "2"})
 	p.ntFunctionList("Program")
 }
 
 func (p *Parser) Parse() {
 	p.ntProgram()
-    ioutil.WriteFile("out.dot", []byte(p.tree.String()), 0644)
+	ioutil.WriteFile("out.dot", []byte(p.tree.String()), 0644)
 }
 
 func Parse(lexer *Lexer) *Parser {
-    graphAst, _ := ggv.ParseString(`digraph G {}`)
-    graph := ggv.NewGraph()
-    ggv.Analyse(graphAst, graph)
+	graphAst, _ := ggv.ParseString(`digraph G {}`)
+	graph := ggv.NewGraph()
+	ggv.Analyse(graphAst, graph)
 	return &Parser{lexer, lexer.NextToken(), graph}
 }
