@@ -35,4 +35,5 @@ const (
 	COMMENT = "COMMENT"
 
 	ILLEGAL = "ILLEGAL"
+	EOF     = "EOF"
 )

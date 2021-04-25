@@ -62,6 +62,10 @@ func (lexer *Lexer) readChars(n int) string {
 	return lexer.program[start:lexer.next_idx]
 }
 
+func (lexer *Lexer) emitEOFToken() *Token {
+	return &Token{EOF, string(lexer.char), lexer.line_num}
+}
+
 func (lexer *Lexer) emitIllegalToken() *Token {
 	return &Token{ILLEGAL, string(lexer.char), lexer.line_num}
 }
@@ -179,6 +183,8 @@ func (lexer *Lexer) NextToken() *Token {
 			}
 		} else if isDigit(lexer.char) {
 			token = *lexer.emitIntegerToken()
+		} else if lexer.char == 0 {
+			token = *lexer.emitEOFToken()
 		} else {
 			token = *lexer.emitIllegalToken()
 		}
