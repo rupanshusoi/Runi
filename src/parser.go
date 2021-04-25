@@ -14,8 +14,9 @@ type Parser struct {
 
 func (p *Parser) consumeToken() *Token {
 	//fmt.Printf("consuming %v\n", *p.token)
+    token := p.token
 	p.token = p.lexer.NextToken()
-	return p.token
+	return token
 }
 
 func (p *Parser) peekNextToken() *Token {
@@ -43,7 +44,20 @@ func (p *Parser) addNode(name, parent string) string {
     return id
 }
 
-func (p *Parser) ntType() {
+func (p *Parser) addNodeWithId(name, parent, id string) string {
+    p.tree.AddNode("G", id, map[string]string{"label": name})
+    p.tree.AddEdge(parent, id, true, nil)
+    return id
+}
+
+func (p *Parser) editNodeName(id, name string) {
+    attrs, _ := ggv.NewAttrs(make(map[string]string))
+    attrs.Add("label", name)
+    p.tree.Nodes.Lookup[id].Attrs.Extend(attrs)
+}
+
+func (p *Parser) ntType(parent string) {
+    p.addNode(fmt.Sprintf("\"Type (%v)\"", p.token.literal), parent)
 	if p.token.type_ == "TYPE" {
 		p.consumeToken()
 	} else {
@@ -53,8 +67,8 @@ func (p *Parser) ntType() {
 
 func (p *Parser) ntArgs(parent string) {
     id := p.addNode("Args", parent)
-	p.ntType()
-	p.term(IDENT)
+	p.ntType(id)
+    p.editNodeName(id, "\"Args (" + p.term(IDENT).literal + ")\"")
 	if p.token.type_ == COMMA {
 		p.term(COMMA)
 		p.ntArgList(id)
@@ -74,16 +88,14 @@ func (p *Parser) ntParameterList(parent string) {
 }
 
 func (p *Parser) ntArrIdent(parent string) {
-    id := p.addNode("ArrIdent", parent)
-	p.term(IDENT)
+    id := p.addNode("\"ArrIdent (" + p.term(IDENT).literal + ")\"", parent)
 	p.term(LBRACKET)
 	p.ntExpr(id)
 	p.term(RBRACKET)
 }
 
 func (p *Parser) ntFunctionCall(parent string) {
-    id := p.addNode("FunctionCall", parent)
-	p.term(IDENT)
+    id := p.addNode("\"FunctionCall (" + p.term(IDENT).literal + ")\"", parent)
 	p.term(LPAREN)
 	p.ntParameterList(id)
 	p.term(RPAREN)
@@ -99,9 +111,9 @@ func (p *Parser) ntFactor(parent string) {
 	} else if p.peekNextToken().type_ == LPAREN {
 		p.ntFunctionCall(id)
 	} else if p.token.type_ == IDENT {
-		p.term(IDENT)
+        p.editNodeName(id, "\"Factor (" + p.term(IDENT).literal + ")\"")
 	} else if p.token.type_ == INTEGER {
-		p.term(INTEGER)
+        p.editNodeName(id, "\"Factor (" + p.term(INTEGER).literal + ")\"")
 	} else if p.peekNextToken().type_ == LBRACKET {
 		p.ntArrIdent(id)
 	}
@@ -112,9 +124,11 @@ func (p *Parser) ntTerm(parent string) {
 	p.ntFactor(id)
 	if p.token.type_ == STAR {
 		p.term(STAR)
+        p.editNodeName(id, "\"Term (*)\"")
 		p.ntTerm(id)
 	} else if p.token.type_ == SLASH {
 		p.term(SLASH)
+        p.editNodeName(id, "\"Term (/)\"")
 		p.ntTerm(id)
 	}
 }
@@ -124,9 +138,11 @@ func (p *Parser) ntExpr(parent string) {
 	p.ntTerm(id)
 	if p.token.type_ == PLUS {
 		p.term(PLUS)
+        p.editNodeName(id, "\"Expr (+)\"")
 		p.ntExpr(id)
 	} else if p.token.type_ == MINUS {
 		p.term(MINUS)
+        p.editNodeName(id, "\"Expr (-)\"")
 		p.ntExpr(id)
 	}
 }
@@ -140,18 +156,11 @@ func (p *Parser) ntReturnStmt(parent string) {
 	p.term(SEMICOLON)
 }
 
-func (p *Parser) ntCompStmt(parent string) {
-    p.addNode("CompStmt", parent)
-	p.term(IDENT)
-	p.term(COMP_OP)
-	p.term(IDENT)
-}
-
 func (p *Parser) ntIfElse(parent string) {
     id := p.addNode("IfElse", parent)
 	p.term("IF_KW")
 	p.term(LPAREN)
-	p.ntCompStmt(id)
+	p.ntExpr(id)
 	p.term(RPAREN)
 	p.term(LBRACE)
 	p.ntBody(id)
@@ -168,7 +177,7 @@ func (p *Parser) ntForLoop(parent string) {
 	p.term(LPAREN)
 	p.ntAssignStmt(id)
 	p.term(SEMICOLON)
-	p.ntCompStmt(id)
+	p.ntExpr(id)
 	p.term(SEMICOLON)
 	p.ntAssignStmt(id)
 	p.term(LBRACE)
@@ -179,9 +188,9 @@ func (p *Parser) ntForLoop(parent string) {
 func (p *Parser) ntAssignStmt(parent string) {
     id := p.addNode("AssignStmt", parent)
 	if p.token.type_ == "TYPE" {
-		p.ntType()
+		p.ntType(id)
 	}
-	p.term(IDENT)
+    p.editNodeName(id, "\"AssignStmt (" + p.term(IDENT).literal + ")\"")
 	if p.token.type_ == LBRACKET {
 		p.term(LBRACKET)
 		p.ntExpr(id)
@@ -222,8 +231,8 @@ func (p *Parser) ntBody(parent string) {
 
 func (p *Parser) ntFunction(parent string) {
     id := p.addNode("Function", parent)
-	p.ntType()
-    p.term(IDENT)
+	p.ntType(id)
+    p.editNodeName(id, "\"Function (" + p.term(IDENT).literal + ")\"")
 	p.term(LPAREN)
 	p.ntArgList(id)
 	p.term(RPAREN)
