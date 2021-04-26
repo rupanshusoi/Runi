@@ -123,12 +123,12 @@ func (p *Parser) ntFactor(parent string) {
 		p.term(RPAREN)
 	} else if p.peekNextToken().type_ == LPAREN {
 		p.ntFunctionCall(id)
+	} else if p.peekNextToken().type_ == LBRACKET {
+		p.ntArrIdent(id)
 	} else if p.token.type_ == IDENT {
 		p.editNodeName(id, "\"Factor ("+p.term(IDENT).literal+")\"")
 	} else if p.token.type_ == INTEGER {
 		p.editNodeName(id, "\"Factor ("+p.term(INTEGER).literal+")\"")
-	} else if p.peekNextToken().type_ == LBRACKET {
-		p.ntArrIdent(id)
 	} else if p.token.type_ == STRING {
 		literal := p.term(STRING).literal
 		literal = literal[1 : len(literal)-1]
