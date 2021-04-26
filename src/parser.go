@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	ggv "github.com/awalterschulze/gographviz"
 	"io/ioutil"
+
+	ggv "github.com/awalterschulze/gographviz"
 )
 
 type Parser struct {
@@ -82,9 +83,21 @@ func (p *Parser) ntArgList(parent string) {
 	}
 }
 
+func (p *Parser) ntParameters(parent string) {
+	id := p.addNode("Param", parent)
+	p.editNodeName(id, "\"Args ("+p.term(IDENT).literal+")\"")
+	if p.token.type_ == COMMA {
+		p.term(COMMA)
+		p.ntParameterList(id)
+	}
+}
+
 // TODO
 func (p *Parser) ntParameterList(parent string) {
-
+	id := p.addNode("ParameterList", parent)
+	if p.token.type_ == IDENT {
+		p.ntParameters(id)
+	}
 }
 
 func (p *Parser) ntArrIdent(parent string) {
@@ -133,6 +146,16 @@ func (p *Parser) ntTerm(parent string) {
 	}
 }
 
+func (p *Parser) ntCompExpr(parent string) {
+	id := p.addNode("CompExpr", parent)
+	p.ntExpr(id)
+	if p.token.type_ == COMP_OP {
+		symbol := p.token.literal
+		p.term(COMP_OP)
+		p.editNodeName(id, "\"COMP ("+fmt.Sprintf("%s", symbol)+")\"")
+		p.ntExpr(id)
+	}
+}
 func (p *Parser) ntExpr(parent string) {
 	id := p.addNode("Expr", parent)
 	p.ntTerm(id)
@@ -160,7 +183,7 @@ func (p *Parser) ntIfElse(parent string) {
 	id := p.addNode("IfElse", parent)
 	p.term("IF_KW")
 	p.term(LPAREN)
-	p.ntExpr(id)
+	p.ntCompExpr(id)
 	p.term(RPAREN)
 	p.term(LBRACE)
 	p.ntBody(id)
@@ -176,10 +199,10 @@ func (p *Parser) ntForLoop(parent string) {
 	p.term("FOR_KW")
 	p.term(LPAREN)
 	p.ntAssignStmt(id)
-	p.term(SEMICOLON)
-	p.ntExpr(id)
+	p.ntCompExpr(id)
 	p.term(SEMICOLON)
 	p.ntAssignStmt(id)
+	p.term(RPAREN)
 	p.term(LBRACE)
 	p.ntBody(id)
 	p.term(RBRACE)
