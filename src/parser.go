@@ -123,7 +123,7 @@ func (p *Parser) ntFactor(parent string) {
 		p.term(RPAREN)
 	} else if p.peekNextToken().type_ == LPAREN {
 		p.ntFunctionCall(id)
-	} else if p.peekNextToken().type_ == LBRACKET {
+	} else if p.peekNextToken().type_ == LBRACKET && p.token.type_ == IDENT {
 		p.ntArrIdent(id)
 	} else if p.token.type_ == IDENT {
 		p.editNodeName(id, "\"Factor ("+p.term(IDENT).literal+")\"")
