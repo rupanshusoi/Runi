@@ -4,6 +4,12 @@
 *.dll
 *.so
 *.dylib
+*.mod
+*.sum
+test.txt
+out.dot 
+run.sh
+Runi
 lexer
 
 
