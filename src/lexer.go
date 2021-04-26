@@ -168,7 +168,7 @@ func (lexer *Lexer) NextToken() *Token {
 		if lexer.peekChar() == '=' {
 			token = Token{COMP_OP, lexer.readChars(2), lexer.line_num}
 		} else {
-			token = Token{ASSIGN, string(lexer.char), lexer.line_num}
+			token = Token{EQUALS, string(lexer.char), lexer.line_num}
 		}
 	case '"':
 		token = *lexer.emitStringToken()

@@ -27,7 +27,7 @@ const (
 	SLASH   = "SLASH"
 	COMP_OP = "COMP_OP"
 
-	ASSIGN = "ASSIGN"
+	EQUALS = "EQUALS"
 	IDENT  = "IDENT"
 
 	INTEGER = "INTEGER"

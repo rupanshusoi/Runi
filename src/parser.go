@@ -223,7 +223,7 @@ func (p *Parser) ntAssignStmt(parent string) {
 		p.ntExpr(id)
 		p.term(RBRACKET)
 	}
-	p.term(ASSIGN)
+	p.term(EQUALS)
 	p.ntExpr(id)
 	p.term(SEMICOLON)
 }
