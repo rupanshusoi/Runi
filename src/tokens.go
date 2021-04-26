@@ -3,6 +3,7 @@ package main
 var keywords = map[string]string{
 	"int":    "TYPE",
 	"char":   "TYPE",
+	"string": "TYPE",
 	"for":    "FOR_KW",
 	"if":     "IF_KW",
 	"else":   "ELSE_KW",
