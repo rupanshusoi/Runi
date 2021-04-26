@@ -130,9 +130,9 @@ func (p *Parser) ntFactor(parent string) {
 	} else if p.peekNextToken().type_ == LBRACKET {
 		p.ntArrIdent(id)
 	} else if p.token.type_ == STRING {
-		val := p.term(STRING).literal
-		val = val[1 : len(val)-1]
-		p.editNodeName(id, "\"Factor ("+val+")\"")
+		literal := p.term(STRING).literal
+		literal = literal[1 : len(literal)-1]
+		p.editNodeName(id, "\"Factor String ("+literal+")\"")
 	}
 }
 
