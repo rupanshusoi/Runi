@@ -11,7 +11,7 @@
 
 <Args>        -> <Type> IDENTIFIER | <Type> IDENTIFIER COMMA <ArgList> 
 
-<Type>       -> INT | CHAR 
+<Type>       -> INT | CHAR | STRING
 
 IDENTIFIER -> [a-zA-Z]+
 
@@ -23,13 +23,13 @@ IDENTIFIER -> [a-zA-Z]+
 
 <ReturnStmt>  -> RETURN (<Expr> | e) SEMICOLON
 
-<AssignStmt> -> [<Type>] IDENTIFIER ASSIGN <Expr> SEMICOLON
+<AssignStmt> -> [<Type>] (IDENTIFIER | <ArrIdent>) ASSIGN <Expr> SEMICOLON
 
 <Expr>       -> <Term> [(PLUS | MINUS) <Expr>]
 
 <Term>       -> <Factor> [( STAR | SLASH ) <Term>]
 
-<Factor>     -> LPAREN <Expr> RPAREN | <FunctionCall> | IDENTIFIER | INTEGER | CHARACTER | <ArrIdent>
+<Factor>     -> LPAREN <Expr> RPAREN | <FunctionCall> | IDENTIFIER | INTEGER | STRINGLIT | <ArrIdent>
 
 <ArrIdent>   -> IDENTIFIER LBRACKET <Expr> RBRACKET
 
@@ -39,7 +39,9 @@ IDENTIFIER -> [a-zA-Z]+
 
 <Params>           -> IDENTIFIER | IDENTIFIER COMMA <ParameterList>
 
-<IfElse>    -> IF LPAREN <Expr> RPAREN 
+<CompExpr>  -> <Expr> [COMP_OP <Expr>]
+
+<IfElse>    -> IF LPAREN <CompExpr> RPAREN 
                     LBRACE
                         <Body>
                     RBRACE 
@@ -49,13 +51,13 @@ IDENTIFIER -> [a-zA-Z]+
                     RBRACE
 
 
-<ForLoop>   -> FOR LPAREN <AssignStmt> SEMICOLON <Expr> SEMICOLON <AssignStmt> 
+<ForLoop>   -> FOR LPAREN <AssignStmt> <CompExpr> SEMICOLON <AssignStmt> 
                 LBRACE
                     <Body>
                 RBRACE
 
 INTEGER      -> [0-9]+
-CHARACTER    -> [a-zA-Z]   // character have to be lexed 'a' like this
+STRINGLIT    -> [a-zA-Z]* 
 LPAREN       -> (
 RPAREN       -> )
 LBRACKET     -> [
@@ -64,6 +66,7 @@ LBRACE       -> {
 RBRACE       -> }
 INT          -> int 
 CHAR         -> char
+STRING       -> string
 FOR          -> for
 IF           -> if
 ELSE         -> else
