@@ -45,12 +45,6 @@ func (p *Parser) addNode(name, parent string) string {
 	return id
 }
 
-func (p *Parser) addNodeWithId(name, parent, id string) string {
-	p.tree.AddNode("G", id, map[string]string{"label": name})
-	p.tree.AddEdge(parent, id, true, nil)
-	return id
-}
-
 func (p *Parser) editNodeName(id, name string) {
 	attrs, _ := ggv.NewAttrs(make(map[string]string))
 	attrs.Add("label", name)
@@ -92,7 +86,6 @@ func (p *Parser) ntParameters(parent string) {
 	}
 }
 
-// TODO
 func (p *Parser) ntParameterList(parent string) {
 	id := p.addNode("ParameterList", parent)
 	if p.token.type_ == IDENT {
@@ -156,7 +149,7 @@ func (p *Parser) ntCompExpr(parent string) {
 	if p.token.type_ == COMP_OP {
 		symbol := p.token.literal
 		p.term(COMP_OP)
-		p.editNodeName(id, "\"COMP ("+fmt.Sprintf("%s", symbol)+")\"")
+		p.editNodeName(id, "\"CompExpr ("+fmt.Sprintf("%s", symbol)+")\"")
 		p.ntExpr(id)
 	}
 }
