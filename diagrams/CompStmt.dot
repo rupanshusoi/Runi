@@ -1,5 +1,0 @@
-digraph G {
-  CompStmt -> "LeftId <Identifier>";
-  CompStmt -> "Operator COMP_OP";
-  CompStmt -> "RightId <Identifier>";
-}

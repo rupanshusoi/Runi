@@ -1,5 +1,0 @@
-digraph G {
-  IfElse -> "Condition <CompStmt>";
-  IfElse -> "IfBody <Body>";
-  IfElse -> "ElseBody <Body>";
-}

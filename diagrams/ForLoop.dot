@@ -1,6 +1,0 @@
-digraph G {
-  ForLoop -> "Initialization <AssignStmt>";
-  ForLoop -> "Termination <CompStmt>";
-  ForLoop -> "Update <AssignStmt>";
-  ForLoop -> "Body <Body>";
-}
