@@ -10,7 +10,7 @@ import (
 type Parser struct {
 	lexer *Lexer
 	token *Token // current token
-	tree  *ggv.Graph
+	tree  *ggv.Escape
 }
 
 func (p *Parser) consumeToken() *Token {
@@ -281,7 +281,9 @@ func (p *Parser) Parse() {
 
 func Parse(lexer *Lexer) *Parser {
 	graphAst, _ := ggv.ParseString(`digraph G {}`)
-	graph := ggv.NewGraph()
+	graph := ggv.NewEscape()
 	ggv.Analyse(graphAst, graph)
+	graph.AddAttr("G", "labelloc", "t")
+	graph.AddAttr("G", "label", "Source:\n"+lexer.program+"")
 	return &Parser{lexer, lexer.NextToken(), graph}
 }
